@@ -10,5 +10,6 @@ export async function requireAdmin() {
   const access = await getAdminAccess(supabase);
   if (access.status === "logged-out") redirect("/login");
   if (access.status === "unauthorized") redirect("/unauthorized");
+  if (access.status === "unavailable") redirect("/unauthorized?error=verification");
   return { supabase, user: access.user };
 }

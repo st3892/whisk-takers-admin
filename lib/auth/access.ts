@@ -13,7 +13,15 @@ export async function getAdminAccess(supabase: SupabaseClient) {
     .eq("id", user.id)
     .maybeSingle();
 
-  if (error || profile?.is_superadmin !== true) {
+  if (error) {
+    // Keep diagnostics server-side; never log tokens or raw provider errors.
+    console.error("Admin profile lookup failed", { userId: user.id, code: error.code });
+    return { status: "unavailable" } as const;
+  }
+  if (!profile) {
+    console.warn("Admin profile is missing or hidden by RLS", { userId: user.id });
+  }
+  if (profile?.is_superadmin !== true) {
     return { status: "unauthorized" } as const;
   }
   return { status: "authorized", user } as const;

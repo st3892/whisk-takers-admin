@@ -9,6 +9,7 @@ export default async function LoginPage({ searchParams }: {
   const access = await getAdminAccess(await createClient());
   if (access.status === "authorized") redirect("/admin");
   if (access.status === "unauthorized") redirect("/unauthorized");
+  if (access.status === "unavailable") redirect("/unauthorized?error=verification");
   const { error } = await searchParams;
   return <main className="shell"><section className="card">
     <p className="brand">Whisk Takers</p>

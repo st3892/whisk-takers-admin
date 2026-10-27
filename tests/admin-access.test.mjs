@@ -9,7 +9,7 @@ const source = readFileSync(new URL("../lib/auth/access.ts", import.meta.url), "
 const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2017 },
 }).outputText;
-const context = { exports: {} };
+const context = { exports: {}, console: { error() {}, warn() {} } };
 vm.runInNewContext(compiled, context);
 const { getAdminAccess } = context.exports;
 
@@ -36,7 +36,7 @@ for (const [name, options, expected] of [
   ["missing flag", { profile: {} }, "unauthorized"],
   ["null flag", { profile: { is_superadmin: null } }, "unauthorized"],
   ["truthy string is insufficient", { profile: { is_superadmin: "true" } }, "unauthorized"],
-  ["RLS or database error", { profile: { is_superadmin: true }, error: new Error("denied") }, "unauthorized"],
+  ["RLS or database error fails closed", { profile: { is_superadmin: true }, error: new Error("denied") }, "unavailable"],
   ["superadmin", { profile: { is_superadmin: true } }, "authorized"],
 ]) {
   test(name, async () => {
@@ -49,3 +49,35 @@ for (const [name, options, expected] of [
     ]);
   });
 }
+
+test("account switches always query the current verified identity and fresh flag", async () => {
+  const supabase = client({ profile: { is_superadmin: true } });
+  for (const id of ["first-admin", "c7325ff0-7c7e-48cf-91b5-87ce405b7ee2", "third-admin"]) {
+    supabase.auth.getUser = async () => ({ data: { user: { id } }, error: null });
+    assert.equal((await getAdminAccess(supabase)).status, "authorized");
+    assert.deepEqual(supabase.calls.at(-1), ["eq", "id", id]);
+  }
+  supabase.from = () => ({
+    select() { return this; },
+    eq() { return this; },
+    async maybeSingle() { return { data: { is_superadmin: false }, error: null }; },
+  });
+  assert.equal((await getAdminAccess(supabase)).status, "unauthorized");
+});
+
+test("authorization waits for the current user's profile lookup", async () => {
+  const supabase = client();
+  let resolveProfile;
+  const profile = new Promise(resolve => { resolveProfile = resolve; });
+  supabase.from = () => ({
+    select() { return this; },
+    eq() { return this; },
+    maybeSingle() { return profile; },
+  });
+  let completed = false;
+  const pending = getAdminAccess(supabase).then(result => { completed = true; return result; });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(completed, false);
+  resolveProfile({ data: { is_superadmin: true }, error: null });
+  assert.equal((await pending).status, "authorized");
+});

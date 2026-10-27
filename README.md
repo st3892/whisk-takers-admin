@@ -29,8 +29,11 @@ Supabase Auth callback shown in the Google provider settings.
   It validates the user with `auth.getUser()`, then queries
   `public.profiles.is_superadmin` where `profiles.id = user.id` using the user's
   session and existing RLS. Only the literal boolean `true` allows access.
-- Logged-out users go to `/login`. False/missing flags, missing profiles, and
-  profile query failures go to `/unauthorized`.
+- Logged-out users go to `/login`. False/missing flags and missing profiles go to
+  `/unauthorized`. Profile query failures fail closed with an access-check-unavailable
+  message and a server-side diagnostic containing only the verified user ID and error code.
+  Missing or RLS-hidden profiles also produce a server-side diagnostic. The Unauthorized
+  page rechecks the current session so a previous denial does not trap an authorized user.
 - The admin layout, all four admin pages, and all generation mutations call `requireAdmin()` server-side. Future
   protected data functions, Route Handlers, and Server Actions must call this
   helper at their own entry points; layouts alone are insufficient protection.

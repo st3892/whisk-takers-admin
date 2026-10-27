@@ -25,6 +25,7 @@ export async function proxy(request: NextRequest) {
       const destination = request.nextUrl.clone();
       destination.pathname = access.status === "logged-out" ? "/login" : "/unauthorized";
       destination.search = "";
+      if (access.status === "unavailable") destination.searchParams.set("error", "verification");
       const redirect = NextResponse.redirect(destination, 303);
       response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
       response = redirect;
