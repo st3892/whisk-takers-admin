@@ -117,3 +117,53 @@ failure `23503` is a constraint issue, not an RLS issue. Never bypass these erro
 Before production use, test create, update, and confirmed delete with a real
 superadmin session, plus generation deletion with related votes. The automated
 tests mock the database boundary; they do not prove deployed RLS permissions.
+
+## Week 7 administration
+
+The original dashboard, Profiles, AI Generations CRUD, Votes, Google OAuth, and
+server-side `profiles.is_superadmin === true` check remain in place. Navigation
+is grouped into Overview, People, AI Configuration, and Observability.
+
+New list routes and their `/<id>` record views:
+
+| Route under `/admin` | Existing table | Operations |
+| --- | --- | --- |
+| `/prompt-chains` | `prompt_chains` | Read only; record view shows ordered steps |
+| `/prompt-chain-steps` | `prompt_chain_steps` | Read only; optional chain filter |
+| `/prompt-chain-mixes` | `prompt_chain_mixes` | Read/update only |
+| `/terms` | `terms` | CRUD; term search |
+| `/generation-requests` | `generation_requests` | Read only; input/status filters, duration, associated responses |
+| `/generation-examples` | `generation_examples` | CRUD; output search, named chain dropdown |
+| `/llm-models` | `llm_models` | CRUD; named provider dropdown |
+| `/llm-providers` | `llm_providers` | CRUD |
+| `/llm-responses` | `llm_responses` | Read only; response text, request/model filters, latency |
+| `/allowed-signup-domains` | `allowed_signup_domains` | CRUD; domain validation |
+| `/whitelisted-emails` | `whitelisted_emails` | CRUD; email validation |
+
+A fixed resource registry controls table names, fields, relationships, and
+permissions. Unknown resource names and forbidden operations are rejected on the
+server. Each page and each mutation calls `requireAdmin()` before database access.
+All operations use the existing authenticated Supabase session and RLS. No schema,
+policy, service-role credential, or image management changes are included.
+
+Lists are paginated in groups of 25 with filters preserved across pages. Large
+text can be expanded. Record views contain full fields, edit forms where allowed,
+and an ID confirmation form before deletion where allowed. Mixes use chain-name
+checkboxes and never expose create/delete. Models and examples use named relationship
+choices. Choice-loading errors disable editing rather than silently clearing a
+relationship. Foreign-key and RLS errors are surfaced; zero-row mutations do not
+report success. Inserts use existing database timestamp/default behavior and allow
+an optional ID for tables without generated IDs. IDs beyond JavaScript's safe integer
+range are refused when returned as rounded numbers; no mutation uses a rounded ID.
+
+The dashboard adds exact counts for prompt chains, active models, requests,
+failed/error requests, and pending/queued requests; five recent requests; and average
+latency across visible non-null, non-negative response latencies. Latency reads are
+paged and capped at 50,000 responses; errors or incomplete reads show unavailable
+rather than a partial average. All statistics reflect existing RLS visibility.
+
+The shared admin loading/error boundaries cover the new routes. Tests cover the
+resource permission matrix, guard enforcement, field allowlists, validation,
+confirmation, RLS/constraint failures, zero-row mutations, and filtered pagination.
+Live CRUD still requires verification with an authenticated superadmin session;
+mocked database-boundary tests cannot establish deployed RLS behavior.

@@ -93,3 +93,31 @@ summary { cursor: pointer; }
 .admin-app .skip-link:focus { transform: translateY(0); }
 .admin-app .record-context { display: block; color: #796554; font-size: 12px; margin-bottom: 12px; }
 @media (forced-colors: active) { .admin-app .badge, .admin-app nav a[aria-current="page"] { border: 1px solid currentColor; } }
+
+/* Week 7: compact navigation, record forms, and generation observability. */
+.admin-sidebar { overflow-y: auto; }
+.nav-group > summary { font-size: 11px; text-transform: uppercase; letter-spacing: .8px; color: #796554; }
+.nav-group > div { display: grid; gap: 2px; margin: 5px 0 12px; }
+.admin-sidebar .nav-group a { padding: 9px 10px; font-size: 12px; }
+.admin-app select { display: block; width: 100%; padding: 11px 12px; margin-top: 7px; border: 1px solid #d5c7b4; border-radius: 8px; background: #fffdf8; color: var(--chocolate); font: inherit; }
+.admin-app .check-label { display: flex; gap: 10px; align-items: center; padding: 6px 0; }
+.admin-app .check-label input { width: 18px; height: 18px; margin: 0; accent-color: var(--cherry); }
+.resource-form fieldset { border: 1px solid #ded2c1; border-radius: 8px; padding: 12px; max-height: 300px; overflow-y: auto; }
+.filter-bar { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin-bottom: 22px; }
+.filter-bar label { flex: 1; min-width: 150px; max-width: 340px; font-size: 12px; color: #796554; }
+.filter-bar .text-link { padding-bottom: 12px; }
+.relation-list { display: grid; gap: 6px; min-width: 130px; }
+.record-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; margin: 0; }
+.record-fields dt { text-transform: uppercase; font-size: 11px; color: #796554; margin-bottom: 8px; }
+.record-fields dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.record-fields .long-text { max-width: none; min-width: 0; }
+.step-sequence { list-style: none; padding: 0; margin: 0; }
+.step-sequence li { position: relative; border-left: 3px solid #b9c69b; padding: 10px 20px 28px; margin-left: 10px; }
+.step-sequence li + li::before { content: "↓"; position: absolute; left: -10px; top: -18px; background: #fffcf6; color: #5b713b; padding: 3px; }
+.step-sequence h3 { font: 20px Georgia, serif; margin: 12px 0; }
+.step-sequence p { font-size: 13px; color: #796554; }
+.step-sequence .relation-list { display: inline; }
+.badge.pending { background: #fae8ba; color: #71521c; }
+.create-panel { margin-top: 18px; }
+@media(max-width: 900px) { .admin-sidebar nav { flex-wrap: wrap; overflow: visible; gap: 18px; }.nav-group { min-width: 130px; flex: 1; }.nav-group > div { display: grid; }.admin-sidebar .nav-group a { white-space: normal; } }
+@media(max-width: 580px) { .record-fields { grid-template-columns: 1fr; } }

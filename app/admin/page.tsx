@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Observability } from "./resources/observability";
 import { requireAdmin } from "@/lib/auth/require-admin";
 import { readAll, text, date, voteLabel, targetId, type Row } from "@/lib/admin/data";
 import { PageHeading, Notice, LongText, VotesTable } from "./components";
@@ -39,6 +40,7 @@ export default async function AdminPage() {
     <p className="caption">Live records visible to your admin session under existing RLS. Like rate = likes ÷ (likes + boos). A dash means unavailable or no votes.</p>
     {(profiles.error || generations.error || votes.error) && <Notice>{[profiles.error ? `Profile count failed (${profiles.error.code}): ${profiles.error.message}` : null, generations.error, votes.error].filter(Boolean).join(" ")}</Notice>}
     <div className="stats-grid">{statistics.map(([label, value]) => <section className="stat-card" key={String(label)}><span>{label}</span><strong>{typeof value === "number" ? value.toLocaleString() : value ?? "—"}</strong></section>)}</div>
+    <Observability/>
     <div className="dashboard-grid"><section className="panel"><div className="section-heading"><h2>The tasting verdict</h2><span className="badge pistachio">Likes vs Boos</span></div>{votes.error ? <p className="empty">Vote analysis unavailable.</p> : likes + boos === 0 ? <p className="empty">No votes yet. The tasting room is open.</p> : <><div className="vote-bar" role="img" aria-label={`${likes} likes and ${boos} boos`}><span style={{ width: `${rate}%` }}/><span style={{ width: `${100 - (rate || 0)}%` }}/></div><div className="chart-legend"><span>● Likes · {likes.toLocaleString()}</span><span>● Boos · {boos.toLocaleString()}</span></div></>}</section>
     <section className="panel"><h2>Today’s kitchen notes</h2><p className="muted">Manage manually entered generations, meet your members, and see what gets a laugh.</p><Link className="text-link" href="/admin/generations">Open AI Generations →</Link></section></div>
     <div className="dashboard-grid">{[["Most Liked AI Joke", mostLiked, "likes"], ["Most Booed AI Joke", mostBooed, "boos"]].map(([title, item, metric]) => {

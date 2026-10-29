@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { signOut } from "@/app/auth/actions";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -17,7 +18,7 @@ export default async function UnauthorizedPage({ searchParams }: {
     <p className="description">{access.status === "unavailable"
       ? "We couldn’t verify administrator access. Try again shortly."
       : "This account does not have access to Kitchen Control. Sign out to try another Google account."}</p>
-    <a className="button" href="/admin">Check access again</a>
+    <Link className="button" href="/admin" prefetch={false}>Check access again</Link>
     {error === "signout" && <p className="error" role="alert">Sign-out failed. Please try again.</p>}
     <form action={signOut}><button className="button" type="submit">Sign out</button></form>
   </section></main>;
